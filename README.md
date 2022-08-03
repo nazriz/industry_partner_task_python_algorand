@@ -1,0 +1,1 @@
+# industry_partner_task_python_algorand
