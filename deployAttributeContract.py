@@ -1,16 +1,16 @@
 import base64
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from algosdk.future import transaction
 from algosdk import account, mnemonic, logic
 from algosdk.v2client import algod
 from pyteal import *
 
-load_dotenv()
+# load_dotenv()
 
-ALGOD_API_KEY = os.getenv('ALGOD_API_KEY')
-ALGOD_ADDRESS = os.getenv('ALGOD_ADDRESS')
-WALLET = os.getenv('WALLET')
+# ALGOD_API_KEY = os.getenv('ALGOD_API_KEY')
+# ALGOD_ADDRESS = os.getenv('ALGOD_ADDRESS')
+# WALLET = os.getenv('WALLET')
 
 # ==== PLEASE POPULATE creator_mnemonic with the mnemonic of the address that is to be used for contract deployment + attribute population =====
 # user declared account mnemonics
