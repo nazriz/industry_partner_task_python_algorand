@@ -10,6 +10,11 @@ load_dotenv()
 
 ALGOD_API_KEY = os.getenv('ALGOD_API_KEY')
 
+input_name = ""
+input_address = ""
+input_date=""
+input_id=""
+
 # user declared account mnemonics
 creator_mnemonic = "rifle snake educate gasp whisper discover tattoo shell ancient neither layer excuse protect menu hard sadness monster comic pony give champion hospital payment absorb author"
 # user declared algod connection parameters. Node must have EnableDeveloperAPI set to true in its config
@@ -18,6 +23,7 @@ algod_token = ""
 headers = {
     "X-API-Key": ALGOD_API_KEY,
 }
+
 
 # helper function to compile program source
 def compile_program(client, source_code):
@@ -56,19 +62,20 @@ def read_global_state(client, app_id):
     return format_state(global_state)
 
 
-"""Basic Counter Application in PyTeal"""
+"""Attribute Contract Pyteal"""
 
-def approval_program():
+def approval_program(name, address, date, id):
+
     on_creation = Seq([
-        App.globalPut(Bytes("Count"), Int(0)),
-        Return(Int(1))
+     Approve()
     ])
 
     global_name = Bytes("name")
     global_address = Bytes("address")
     global_date = Bytes("date")
-    global_id_num = Bytes("id_num")
+    global_id = Bytes("id")
 
+    # on_creation = Return(Int(0))
 
     handle_optin = Return(Int(0))
 
@@ -78,57 +85,44 @@ def approval_program():
 
     handle_deleteapp = Return(Int(0))
 
-    scratchCount = ScratchVar(TealType.uint64)
 
- 
-
-    add_name = Seq(
-        App.globalPut(global_name, Bytes("TestName")),
+    addName = Seq([
+      App.globalPut(global_name, Bytes(name)),
         Approve(),
-    )
+    ])
 
-    add_address = Seq(
-        App.globalPut(global_address, Bytes("123 Test Address, VIC, 3000")),
+    addAddress = Seq([
+            App.globalPut(global_address, Bytes(address)),
         Approve(),
-    )
-
-    add_date = Seq(
-        App.globalPut(global_date, Bytes("04/08/22")),
-        Approve(),
-    )
-
-    add_id_num = Seq(
-        App.globalPut(global_id_num, Bytes("08080808")),
-        Approve(),
-    )
-
-
-
-    deduct = Seq([
-       scratchCount.store(App.globalGet(Bytes("Count"))),
-        If(scratchCount.load() > Int(0),
-            App.globalPut(Bytes("Count"), scratchCount.load() - Int(1)),
-        ),
-        Return(Int(1))
    ])
+
+    addDate = Seq(
+        App.globalPut(global_date, Bytes(date)),
+        Approve(),
+    )
+
+    addId = Seq(
+        App.globalPut(global_id, Bytes(id)),
+        Approve(),
+    )
 
     handle_noop = Cond(
         [And(
             Global.group_size() == Int(1),
-            Txn.application_args[0] == Bytes("add_name")
-        ), add_name],
+            Txn.application_args[0] == Bytes("addName")
+        ), addName],
         [And(
             Global.group_size() == Int(1),
-            Txn.application_args[0] == Bytes("add_address")
-        ), add_address], 
+            Txn.application_args[0] == Bytes("addAddress")
+        ), addAddress],
         [And(
             Global.group_size() == Int(1),
-            Txn.application_args[0] == Bytes("add_date")
-        ), add_date],
-        [And(
+            Txn.application_args[0] == Bytes("addDate")
+        ), addDate],
+         [And(
             Global.group_size() == Int(1),
-            Txn.application_args[0] == Bytes("add_id_num")
-        ), add_id_num],
+            Txn.application_args[0] == Bytes("addId")
+        ), addId],
     )
 
     program = Cond(
@@ -139,11 +133,6 @@ def approval_program():
         [Txn.on_completion() == OnComplete.DeleteApplication, handle_deleteapp],
         [Txn.on_completion() == OnComplete.NoOp, handle_noop]
     )
-    # Mode.Application specifies that this is a smart contract
-    return compileTeal(program, Mode.Application, version=5)
-    
-
-    
     # Mode.Application specifies that this is a smart contract
     return compileTeal(program, Mode.Application, version=5)
 
@@ -193,7 +182,44 @@ def create_app(client, private_key, approval_program, clear_program, global_sche
 
     return app_id
 
+
+# call application
+def call_app(client, private_key, index, app_args) :
+    # declare sender
+    sender = account.address_from_private_key(private_key)
+
+    # get node suggested parameters
+    params = client.suggested_params()
+
+    # create unsigned transaction
+    txn = transaction.ApplicationNoOpTxn(sender, params, index, app_args)
+
+    # sign transaction
+    signed_txn = txn.sign(private_key)
+    tx_id = signed_txn.transaction.get_txid()
+
+    # send transaction
+    client.send_transactions([signed_txn])
+
+
+    # wait for confirmation
+    try:
+        transaction_response = transaction.wait_for_confirmation(client, tx_id, 4)
+        print("TXID: ", tx_id)
+        print("Result confirmed in round: {}".format(transaction_response['confirmed-round']))
+
+    except Exception as err:
+        print(err)
+        return
+    print("Application called")
+
 def main() :
+
+    input_name = input("Please enter a name:")
+    input_address = input("Please enter an address:")
+    input_date = input("Please enter a date:")
+    input_id = input("Please enter an ID:")
+
     # initialize an algodClient
     algod_client = algod.AlgodClient(algod_token, algod_address, headers)
 
@@ -210,7 +236,7 @@ def main() :
 
     # compile program to TEAL assembly
     with open("./approval.teal", "w") as f:
-        approval_program_teal = approval_program()
+        approval_program_teal = approval_program(input_name, input_address, input_date, input_id)
         f.write(approval_program_teal)
 
 
@@ -226,16 +252,43 @@ def main() :
     clear_state_program_compiled = compile_program(algod_client, clear_state_program_teal)
 
     print("--------------------------------------------")
-    print("Deploying Counter application......")
+    print("Deploying Attribute Contract application......")
 
     # create new application
-
     app_id = create_app(algod_client, creator_private_key, approval_program_compiled, clear_state_program_compiled, global_schema, local_schema)
 
-    # read global state of application
+    # read global state of application, show contract has no initialised values
     print("Global state:", read_global_state(algod_client, app_id))
 
+    # Make contract calls for storing onchain values.
     print("--------------------------------------------")
- 
+    print("Calling addName......")
+    app_args = ["addName"]
+    call_app(algod_client, creator_private_key, app_id, app_args)
+    print("--------------------------------------------")
+    print("Calling addAddress......")
+    app_args = ["addAddress"]
+    call_app(algod_client, creator_private_key, app_id, app_args)
+    print("--------------------------------------------")
+    print("Calling addDate......")
+    app_args = ["addDate"]
+    call_app(algod_client, creator_private_key, app_id, app_args)
+    print("--------------------------------------------")
+    print("Calling addId......")
+    app_args = ["addId"]
+    call_app(algod_client, creator_private_key, app_id, app_args)
+
+    # read global state of application
+    contractGlobalState = read_global_state(algod_client, app_id)
+    print("Global state:", contractGlobalState)
+
+    # Decode onchain attributes from base64 into utf-8
+    print("--------------------------------------------")
+    print(f"Decoded onchain attributes in contract with app-id: {app_id}")
+    for attribute in contractGlobalState:
+        print(f" {attribute}: {base64.b64decode(contractGlobalState[attribute]).decode('utf-8')}")
+
+
 
 main()
+

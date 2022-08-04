@@ -141,11 +141,7 @@ def approval_program():
     )
     # Mode.Application specifies that this is a smart contract
     return compileTeal(program, Mode.Application, version=5)
-    
 
-    
-    # Mode.Application specifies that this is a smart contract
-    return compileTeal(program, Mode.Application, version=5)
 
 def clear_state_program():
     program = Return(Int(1))
@@ -229,7 +225,6 @@ def main() :
     print("Deploying Counter application......")
 
     # create new application
-
     app_id = create_app(algod_client, creator_private_key, approval_program_compiled, clear_state_program_compiled, global_schema, local_schema)
 
     # read global state of application

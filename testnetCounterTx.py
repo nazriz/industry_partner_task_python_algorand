@@ -84,13 +84,20 @@ def call_app(client, private_key, index, app_args) :
 
 
 def main():
-    app_id = 102957128
+    app_id = 103011091
     creator_private_key = "zU0zjQJG/fvIe8VECKX88FTWLCbtvXqUy08nBpO3NdRie6C4FH7mRLqODBhLzyvq1wkFNPVL8sCFVipL8Wxc0A=="
     algod_client = algod.AlgodClient(algod_token, algod_address, headers)
 
     print("Calling Counter application......")
-    app_args = ["Add"]
+    app_args = ["add_name"]
     call_app(algod_client, creator_private_key, app_id, app_args)
+    # app_args = ["add_address"]
+    # call_app(algod_client, creator_private_key, app_id, app_args)
+    # app_args = ["add_date"]
+    # call_app(algod_client, creator_private_key, app_id, app_args)
+    # app_args = ["add_id_num"]
+    # call_app(algod_client, creator_private_key, app_id, app_args)
+
 
     # read global state of application
     print("Global state:", read_global_state(algod_client, app_id))
