@@ -9,16 +9,16 @@ from pyteal import *
 load_dotenv()
 
 ALGOD_API_KEY = os.getenv('ALGOD_API_KEY')
+ALGOD_ADDRESS = os.getenv('ALGOD_ADDRESS')
+WALLET = os.getenv('WALLET')
 
-input_name = ""
-input_address = ""
-input_date=""
-input_id=""
-
+# ==== PLEASE POPULATE creator_mnemonic with the mnemonic of the address that is to be used for contract deployment + attribute population =====
 # user declared account mnemonics
-creator_mnemonic = "rifle snake educate gasp whisper discover tattoo shell ancient neither layer excuse protect menu hard sadness monster comic pony give champion hospital payment absorb author"
+creator_mnemonic = WALLET
 # user declared algod connection parameters. Node must have EnableDeveloperAPI set to true in its config
-algod_address = "https://testnet-algorand.api.purestake.io/ps2"
+
+# ==== PLEASE POPULATE algod_address and api_key with relevant algorand testnet endpoint and key ====
+algod_address = ALGOD_ADDRESS
 algod_token = ""
 headers = {
     "X-API-Key": ALGOD_API_KEY,
@@ -215,10 +215,10 @@ def call_app(client, private_key, index, app_args) :
 
 def main() :
 
-    input_name = input("Please enter a name:")
-    input_address = input("Please enter an address:")
-    input_date = input("Please enter a date:")
-    input_id = input("Please enter an ID:")
+    input_name = input("Please enter a name: ")
+    input_address = input("Please enter an address: ")
+    input_date = input("Please enter a date: ")
+    input_id = input("Please enter an ID: ")
 
     # initialize an algodClient
     algod_client = algod.AlgodClient(algod_token, algod_address, headers)
