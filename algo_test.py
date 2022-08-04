@@ -3,7 +3,11 @@ from dotenv import load_dotenv
 from algosdk.v2client import algod
 from algosdk import account, mnemonic
 
+<<<<<<< HEAD
 load_dotenv() # Load env variables
+=======
+load_dotenv()
+>>>>>>> 29d53714e0a2343ba5899d647ace0ea501758f1a
 
 ALGOD_ADDRESS = os.getenv('ALGOD_ADDRESS')
 ALGOD_API_KEY = os.getenv('ALGOD_API_KEY')
