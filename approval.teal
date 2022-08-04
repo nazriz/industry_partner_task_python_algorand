@@ -60,25 +60,25 @@ bnz main_l12
 err
 main_l12:
 byte "id"
-byte "88888"
+byte "80880808"
 app_global_put
 int 1
 return
 main_l13:
 byte "date"
-byte "22/2/22"
+byte "22/2/11"
 app_global_put
 int 1
 return
 main_l14:
 byte "address"
-byte "123 fake street, VIC, 3000"
+byte "test street, 123, VIC AUS"
 app_global_put
 int 1
 return
 main_l15:
 byte "name"
-byte "testy mctest"
+byte "Testy Test"
 app_global_put
 int 1
 return
